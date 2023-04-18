@@ -1,0 +1,70 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0b7f8cd..244fc06 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -235,49 +235,27 @@ install(
+   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+   COMPONENT dev)
+ 
+-find_package(CycloneDDS REQUIRED)
++find_package(cyclonedds REQUIRED)
+ # Support for shared memory in Cyclone DDS C++ depends on support for shared
+ # memory being compiled into Cyclone DDS and iceoryx_binding_c being available
+ # If Cyclone DDS is compiled with support for shared memory, Cyclone DDS C++
+ # must be compiled with shared memory too and vice versa.
+-get_target_property(cyclonedds_has_shm CycloneDDS::ddsc SHM_SUPPORT_IS_AVAILABLE)
+-mark_as_advanced(cyclonedds_has_shm)
+-
+ option(ENABLE_SHM "Enable shared memory support" ${cyclonedds_has_shm})
+ if(ENABLE_SHM)
+-  if(NOT cyclonedds_has_shm)
+-    message(FATAL_ERROR "Cyclone DDS is NOT compiled with support for shared memory")
+-  else()
+-    find_package(iceoryx_binding_c REQUIRED)
+-  endif()
+-  message(STATUS "Found iceoryx_binding_c: (found version \"${iceoryx_binding_c_VERSION}\")")
++  find_package(iceoryx REQUIRED)
++  message(STATUS "Found iceoryx: (found version \"${iceoryx_VERSION}\")")
+   set(ENABLE_SHM ON)
+   set(DDSCXX_HAS_SHM "1")
+-elseif(cyclonedds_has_shm)
+-  message(FATAL_ERROR "Cyclone DDS is compiled with support for shared memory")
+ endif()
+ 
+-get_target_property(cyclonedds_has_type_discovery CycloneDDS::ddsc TYPE_DISCOVERY_IS_AVAILABLE)
+-mark_as_advanced(cyclonedds_has_type_discovery)
+ option(ENABLE_TYPE_DISCOVERY "Enable Type Discovery support" ${cyclonedds_has_type_discovery})
+ if(ENABLE_TYPE_DISCOVERY)
+-  if (NOT cyclonedds_has_type_discovery)
+-    message(FATAL_ERROR "Cyclone DDS is not compiled with type discovery enabled")
+-  endif()
+   message(STATUS "Compiling with type discovery support")
+   set(DDSCXX_HAS_TYPE_DISCOVERY "1")
+ endif()
+ 
+-get_target_property(cyclonedds_has_topic_discovery CycloneDDS::ddsc TOPIC_DISCOVERY_IS_AVAILABLE)
+-mark_as_advanced(cyclonedds_has_topic_discovery)
+ option(ENABLE_TOPIC_DISCOVERY "Enable Topic Discovery support" ${cyclonedds_has_topic_discovery})
+ if(ENABLE_TOPIC_DISCOVERY)
+-  if (NOT cyclonedds_has_topic_discovery)
+-    message(FATAL_ERROR "Cyclone DDS is not compiled with topic discovery enabled")
+-  endif()
+-  if(NOT ENABLE_TYPE_DISCOVERY)
+-    message(FATAL_ERROR "ENABLE_TOPIC_DISCOVERY requires ENABLE_TYPE_DISCOVERY to be enabled")
+-  endif()
+   message(STATUS "Compiling with topic discovery support")
+   set(DDSCXX_HAS_TOPIC_DISCOVERY "1")
+ endif()
+diff --git a/src/ddscxx/CMakeLists.txt b/src/ddscxx/CMakeLists.txt
+index e2a725b..b6e175c 100644
+--- a/src/ddscxx/CMakeLists.txt
++++ b/src/ddscxx/CMakeLists.txt
+@@ -90,7 +90,7 @@ add_library(${PROJECT_NAME}::ddscxx ALIAS ddscxx)
+ add_coverage(ddscxx)
+ 
+ set_property(TARGET ddscxx PROPERTY CXX_STANDARD ${cyclonedds_cpp_std_to_use})
+-target_link_libraries(ddscxx PUBLIC CycloneDDS::ddsc)
++target_link_libraries(ddscxx PUBLIC cyclonedds::ddsc)
+ target_include_directories(
+   ddscxx
+   PUBLIC
