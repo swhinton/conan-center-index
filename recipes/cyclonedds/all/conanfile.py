@@ -6,7 +6,7 @@ from conan.tools.files import apply_conandata_patches, copy, export_conandata_pa
 from conan.tools.scm import Version
 import os
 
-required_conan_version = ">=1.53.0"
+required_conan_version = ">=2.0"
 
 
 class CycloneDDSConan(ConanFile):
@@ -23,16 +23,22 @@ class CycloneDDSConan(ConanFile):
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
+        "with_idlc": [True, False],
         "with_ssl": [True, False],
         "with_shm" : [True, False],
         "enable_security" : [True, False],
+        "with_type_discovery": [True, False],
+        "with_topic_discovery": [True, False]
     }
     default_options = {
         "shared": False,
         "fPIC": True,
+        "with_idlc": True,
         "with_ssl": False,
         "with_shm": False,
         "enable_security": False,
+        "with_type_discovery": True,
+        "with_topic_discovery": True
     }
 
     short_paths = True
@@ -105,18 +111,16 @@ class CycloneDDSConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        # TODO : determine how to do in conan :
-        # - idlc is a code generator that is used as tool (and so not cross compiled)
-        # - other tools like ddsperf is cross compiled for target
-        # - maybe separate package like cyclonedds_idlc
+        # We don't build the IDLC tool here since that is a "Tool requires" package.
         tc.variables["BUILD_IDLC"] = False
         tc.variables["BUILD_IDLC_TESTING"] = False
         tc.variables["BUILD_DDSPERF"] = False
         tc.variables["BUILD_IDLC_TESTING"] = False
-        # variables which effects build
         tc.variables["ENABLE_SSL"] = self.options.with_ssl
         tc.variables["ENABLE_SHM"] = self.options.with_shm
         tc.variables["ENABLE_SECURITY"] = self.options.enable_security
+        tc.variables["ENABLE_TYPE_DISCOVERY"] = self.options.with_type_discovery
+        tc.variables["ENABLE_TOPIC_DISCOVERY"] = self.options.with_topic_discovery
         tc.generate()
 
         cd = CMakeDeps(self)
@@ -142,31 +146,27 @@ class CycloneDDSConan(ConanFile):
             rmdir(self, os.path.join(self.package_folder, "bin"))
 
     def package_info(self):
-        self.cpp_info.set_property("cmake_file_name", "CycloneDDS")
-        self.cpp_info.set_property("cmake_target_name", "CycloneDDS::ddsc")
-        self.cpp_info.set_property("pkg_config_name", "CycloneDDS")
-        # TODO: back to global scope in conan v2
-        self.cpp_info.components["CycloneDDS"].libs = ["ddsc"]
+        # Important: Cyclone team names their modules 'CycloneDDS', but conan requires lower-case.
+        # If we don't do this, packages that depend on this one will fail to build, so unfortunately
+        # dependency packages will need to patch their CMake scripts to use the lower-case name.
+        self.cpp_info.set_property("cmake_file_name", "cyclonedds")
+        self.cpp_info.set_property("cmake_target_name", "cyclonedds::ddsc")
+        self.cpp_info.set_property("pkg_config_name", "cyclonedds")
+        self.cpp_info.components["ddsc"].libs = ["ddsc"]
         requires = []
         if self.options.with_shm:
             requires.append("iceoryx::iceoryx_binding_c")
         if self.options.with_ssl:
             requires.append("openssl::openssl")
-        self.cpp_info.components["CycloneDDS"].requires = requires
+        self.cpp_info.components["ddsc"].requires = requires
         if self.settings.os in ["Linux", "FreeBSD"]:
-            self.cpp_info.components["CycloneDDS"].system_libs = ["dl", "pthread"]
+            self.cpp_info.components["ddsc"].system_libs = ["pthread"]
+            if self.options.shared:
+                self.cpp_info.components["ddsc"].system_libs.append("dl")
         elif self.settings.os == "Windows":
-            self.cpp_info.components["CycloneDDS"].system_libs = [
+            self.cpp_info.components["ddsc"].system_libs = [
                 "ws2_32",
                 "dbghelp",
                 "bcrypt",
                 "iphlpapi"
             ]
-
-        # TODO: to remove in conan v2
-        self.cpp_info.names["cmake_find_package"] = "CycloneDDS"
-        self.cpp_info.names["cmake_find_package_multi"] = "CycloneDDS"
-        self.cpp_info.components["CycloneDDS"].names["cmake_find_package"] = "ddsc"
-        self.cpp_info.components["CycloneDDS"].names["cmake_find_package_multi"] = "ddsc"
-        self.cpp_info.components["CycloneDDS"].set_property("cmake_target_name", "CycloneDDS::ddsc")
-        self.cpp_info.components["CycloneDDS"].set_property("pkg_config_name", "CycloneDDS")
