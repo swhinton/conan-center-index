@@ -1,0 +1,46 @@
+diff --git a/iceoryx_hoofs/CMakeLists.txt b/iceoryx_hoofs/CMakeLists.txt
+index a8238ffef..4108d31b6 100644
+--- a/iceoryx_hoofs/CMakeLists.txt
++++ b/iceoryx_hoofs/CMakeLists.txt
+@@ -217,7 +217,8 @@ target_link_libraries(iceoryx_hoofs
+ )
+ 
+ if(LINUX)
+-    target_link_libraries(iceoryx_hoofs PRIVATE acl atomic ${CODE_COVERAGE_LIBS})
++    find_package(acl REQUIRED)
++    target_link_libraries(iceoryx_hoofs PRIVATE acl::acl atomic ${CODE_COVERAGE_LIBS})
+ endif()
+ 
+ target_compile_options(iceoryx_hoofs PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+diff --git a/iceoryx_meta/CMakeLists.txt b/iceoryx_meta/CMakeLists.txt
+index c9aec6e00..9e83b054a 100644
+--- a/iceoryx_meta/CMakeLists.txt
++++ b/iceoryx_meta/CMakeLists.txt
+@@ -52,7 +52,6 @@ endif()
+ 
+ # ===== Gateways
+ if(DDS_GATEWAY)
+-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/cyclonedds ${CMAKE_BINARY_DIR}/dependencies/cyclonedds/prebuild)
+     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../iceoryx_dds ${CMAKE_BINARY_DIR}/iceoryx_dds)
+ endif()
+ 
+diff --git a/iceoryx_posh/CMakeLists.txt b/iceoryx_posh/CMakeLists.txt
+index 3ed27462b..d30bd74b1 100644
+--- a/iceoryx_posh/CMakeLists.txt
++++ b/iceoryx_posh/CMakeLists.txt
+@@ -23,15 +23,10 @@ project(iceoryx_posh VERSION ${IOX_VERSION_STRING})
+ find_package(Threads REQUIRED)
+ find_package(iceoryx_hoofs REQUIRED)
+ 
+-option(DOWNLOAD_TOML_LIB "Download cpptoml via the CMake ExternalProject module" ON)
+ option(TOML_CONFIG "TOML support for RouDi with dynamic configuration" ON)
+ option(ONE_TO_MANY_ONLY "Restricts communication to 1:n pattern" OFF)
+ 
+ if(TOML_CONFIG)
+-    if (DOWNLOAD_TOML_LIB)
+-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cpptoml/ ${CMAKE_BINARY_DIR}/dependencies/posh/cpptoml/prebuild)
+-    endif()
+-
+     find_package(cpptoml REQUIRED)
+ endif()
+ 

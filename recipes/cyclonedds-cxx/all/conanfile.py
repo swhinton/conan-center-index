@@ -22,17 +22,17 @@ class CycloneDDSCXXConan(ConanFile):
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
-        "with_shm" : [True, False],
-        "with_type_discovery" : [True, False],
-        "with_topic_discovery" : [True, False],
-        "with_legacy_support" : [True, False]
+        "with_shm": [True, False],
+        "with_type_discovery": [True, False],
+        "with_topic_discovery": [True, False],
+        "with_legacy_support": [True, False]
     }
     default_options = {
         "shared": False,
         "fPIC": True,
         "with_shm": False,
-        "with_type_discovery" : True,
-        "with_topic_discovery" : True,
+        "with_type_discovery": True,
+        "with_topic_discovery": True,
         "with_legacy_support": False
     }
 
@@ -79,7 +79,7 @@ class CycloneDDSCXXConan(ConanFile):
             self.options.with_type_discovery = True
 
     def layout(self):
-        cmake_layout(self,src_folder="src")
+        cmake_layout(self, src_folder="src")
 
     def requirements(self):
         self.requires("cyclonedds/0.10.3")
@@ -117,12 +117,14 @@ class CycloneDDSCXXConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        # The IDL generator from CycloneDDS isn't part of this package.
-        tc.variables["BUILD_IDLLIB"] = False
+        # The IDL generator from CycloneDDS isn't part of this package, but we need to produce the library for it.
+        tc.variables["BUILD_IDLLIB"] = True
         tc.variables["ENABLE_LEGACY"] = self.options.with_legacy_support
         tc.variables["ENABLE_SHM"] = self.options.with_shm
         tc.variables["ENABLE_TYPE_DISCOVERY"] = self.options.with_type_discovery
         tc.variables["ENABLE_TOPIC_DISCOVERY"] = self.options.with_topic_discovery
+        if self.options.with_shm:
+            tc.preprocessor_definitions["DDSCXX_HAS_SHM"] = 1
         tc.generate()
         cd = CMakeDeps(self)
         cd.generate()
@@ -144,16 +146,24 @@ class CycloneDDSCXXConan(ConanFile):
             for p in ("*.pdb", "concrt*.dll", "msvcp*.dll", "vcruntime*.dll"):
                 rm(self, p, os.path.join(self.package_folder, "bin"))
         else:
+            # idlcxx is a library loaded by idlc, so we don't have any bins.
             rmdir(self, os.path.join(self.package_folder, "bin"))
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "cyclonedds-cxx")
-        self.cpp_info.set_property("cmake_target_name", "cyclonedds-cxx::ddscxx")
         self.cpp_info.set_property("pkg_config_name", "cyclonedds-cxx")
 
+        # C++ IDL extension for the IDLC tool.
+        self.cpp_info.components["idlcxx"].libs = ["cycloneddsidlcxx"]
+        self.cpp_info.components["idlcxx"].set_property("cmake_target_name", "cyclonedds-cxx::idlcxx")
+
         self.cpp_info.components["ddscxx"].libs = ["ddscxx"]
+        self.cpp_info.components["ddscxx"].set_property("cmake_target_name", "cyclonedds-cxx::ddscxx")
         self.cpp_info.components["ddscxx"].requires = ["cyclonedds::ddsc"]
         self.cpp_info.components["ddscxx"].includedirs = ["include/ddscxx"]
+        if self.options.with_shm:
+            self.cpp_info.components["ddscxx"].requires.append("iceoryx::iceoryx_binding_c")
+            self.cpp_info.components["ddscxx"].defines.append("DDSCXX_HAS_SHM")
         if self.options.with_legacy_support:
             self.cpp_info.components["ddscxx"].requires.append("boost::headers")
         if self.settings.os in ["Linux", "FreeBSD"]:

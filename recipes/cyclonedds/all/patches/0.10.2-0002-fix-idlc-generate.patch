@@ -1,0 +1,15 @@
+diff --git a/cmake/Modules/Generate.cmake b/cmake/Modules/Generate.cmake
+index 0ed67d63..b86adbc3 100644
+--- a/cmake/Modules/Generate.cmake
++++ b/cmake/Modules/Generate.cmake
+@@ -49,8 +49,8 @@ function(IDLC_GENERATE_GENERIC)
+       message(FATAL_ERROR "Cannot find idlc executable")
+     endif()
+   else()
+-    set(_idlc_executable CycloneDDS::idlc)
+-    set(_idlc_depends CycloneDDS::idlc)
++    set(_idlc_executable cyclonedds::idlc)
++    set(_idlc_depends cyclonedds::idlc)
+   endif()
+ 
+   if(NOT IDLC_TARGET AND NOT IDLC_FILES)

@@ -1,20 +1,20 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0b7f8cd..244fc06 100644
+index 1320987..11265dc 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -235,49 +235,27 @@ install(
+@@ -235,49 +235,23 @@ install(
    DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
    COMPONENT dev)
  
 -find_package(CycloneDDS REQUIRED)
-+find_package(cyclonedds REQUIRED)
- # Support for shared memory in Cyclone DDS C++ depends on support for shared
- # memory being compiled into Cyclone DDS and iceoryx_binding_c being available
- # If Cyclone DDS is compiled with support for shared memory, Cyclone DDS C++
- # must be compiled with shared memory too and vice versa.
+-# Support for shared memory in Cyclone DDS C++ depends on support for shared
+-# memory being compiled into Cyclone DDS and iceoryx_binding_c being available
+-# If Cyclone DDS is compiled with support for shared memory, Cyclone DDS C++
+-# must be compiled with shared memory too and vice versa.
 -get_target_property(cyclonedds_has_shm CycloneDDS::ddsc SHM_SUPPORT_IS_AVAILABLE)
 -mark_as_advanced(cyclonedds_has_shm)
--
++find_package(cyclonedds REQUIRED)
+ 
  option(ENABLE_SHM "Enable shared memory support" ${cyclonedds_has_shm})
  if(ENABLE_SHM)
 -  if(NOT cyclonedds_has_shm)
@@ -24,7 +24,6 @@ index 0b7f8cd..244fc06 100644
 -  endif()
 -  message(STATUS "Found iceoryx_binding_c: (found version \"${iceoryx_binding_c_VERSION}\")")
 +  find_package(iceoryx REQUIRED)
-+  message(STATUS "Found iceoryx: (found version \"${iceoryx_VERSION}\")")
    set(ENABLE_SHM ON)
    set(DDSCXX_HAS_SHM "1")
 -elseif(cyclonedds_has_shm)
@@ -68,3 +67,16 @@ index e2a725b..b6e175c 100644
  target_include_directories(
    ddscxx
    PUBLIC
+diff --git a/src/idlcxx/CMakeLists.txt b/src/idlcxx/CMakeLists.txt
+index 13531be..084a022 100644
+--- a/src/idlcxx/CMakeLists.txt
++++ b/src/idlcxx/CMakeLists.txt
+@@ -28,7 +28,7 @@ if(ENABLE_LEGACY)
+   target_compile_definitions(idlcxx PUBLIC "IDLCXX_USE_BOOST")
+ endif()
+ 
+-target_link_libraries(idlcxx PUBLIC CycloneDDS::idl)
++target_link_libraries(idlcxx PUBLIC cyclonedds::idl)
+ 
+ add_library(${PROJECT_NAME}::idlcxx ALIAS idlcxx)
+ 

@@ -1,4 +1,4 @@
 cmake_minimum_required(VERSION 3.5)
 project(cmake_wrapper)
 
-add_subdirectory("iceoryx_meta")
+add_subdirectory("source_subfolder/iceoryx_meta")

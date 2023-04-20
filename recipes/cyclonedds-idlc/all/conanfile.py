@@ -9,34 +9,23 @@ import os
 required_conan_version = ">=2.0"
 
 
-class CycloneDDSConan(ConanFile):
-    name = "cyclonedds"
+class CycloneDDSIdlcConan(ConanFile):
+    name = "cyclonedds-idlc"
     license = "EPL-2.0"
     homepage = "https://cyclonedds.io/"
     url = "https://github.com/conan-io/conan-center-index"
-    description = "Eclipse Cyclone DDS - An implementation"\
-                  " of the OMG Data Distribution Service (DDS) specification"
+    description = "Eclipse Cyclone DDS IDL C language Generator"
     topics = ("dds", "ipc", "ros", "middleware")
 
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
-        "fPIC": [True, False],
-        "with_ssl": [True, False],
-        "with_shm" : [True, False],
-        "enable_security" : [True, False],
-        "with_type_discovery": [True, False],
-        "with_topic_discovery": [True, False]
+        "fPIC": [True, False]
     }
     default_options = {
         "shared": False,
-        "fPIC": True,
-        "with_ssl": False,
-        "with_shm": False,
-        "enable_security": False,
-        "with_type_discovery": True,
-        "with_topic_discovery": True
+        "fPIC": True
     }
 
     short_paths = True
@@ -69,18 +58,9 @@ class CycloneDDSConan(ConanFile):
         self.settings.rm_safe("compiler.libcxx")
 
     def layout(self):
-        cmake_layout(self,src_folder="src")
-
-    def requirements(self):
-        if self.options.with_shm:
-            self.requires("iceoryx/2.0.2")
-        if self.options.with_ssl:
-            self.requires("openssl/1.1.1t")
+        cmake_layout(self, src_folder="src")
 
     def validate(self):
-        if self.options.enable_security and not self.options.shared:
-            raise ConanInvalidConfiguration(f"{self.ref} currently do not support"\
-                                            "static build and security on")
         if self.settings.compiler.get_safe("cppstd"):
             check_min_cppstd(self, self._min_cppstd)
         minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
@@ -109,16 +89,15 @@ class CycloneDDSConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        # We need to build the IDL library here so that the CXX package can link to it... ay ay ay
         tc.variables["BUILD_IDLC"] = True
         tc.variables["BUILD_IDLC_TESTING"] = False
         tc.variables["BUILD_DDSPERF"] = False
         tc.variables["BUILD_IDLC_TESTING"] = False
-        tc.variables["ENABLE_SSL"] = self.options.with_ssl
-        tc.variables["ENABLE_SHM"] = self.options.with_shm
-        tc.variables["ENABLE_SECURITY"] = self.options.enable_security
-        tc.variables["ENABLE_TYPE_DISCOVERY"] = self.options.with_type_discovery
-        tc.variables["ENABLE_TOPIC_DISCOVERY"] = self.options.with_topic_discovery
+        tc.variables["ENABLE_SSL"] = False
+        tc.variables["ENABLE_SHM"] = False
+        tc.variables["ENABLE_SECURITY"] = False
+        tc.variables["ENABLE_TYPE_DISCOVERY"] = True
+        tc.variables["ENABLE_TOPIC_DISCOVERY"] = True
         tc.generate()
 
         cd = CMakeDeps(self)
@@ -137,39 +116,3 @@ class CycloneDDSConan(ConanFile):
         rmdir(self, os.path.join(self.package_folder, "share"))
         rmdir(self, os.path.join(self.package_folder, "lib", "pkgconfig"))
         rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
-        if self.settings.os == "Windows" and self.options.shared:
-            for p in ("*.pdb", "concrt*.dll", "msvcp*.dll", "vcruntime*.dll"):
-                rm(self, p, os.path.join(self.package_folder, "bin"))
-        else:
-            rmdir(self, os.path.join(self.package_folder, "bin"))
-
-    def package_info(self):
-        # Important: Cyclone team names their modules 'CycloneDDS', but conan requires lower-case.
-        # If we don't do this, packages that depend on this one will fail to build, so unfortunately
-        # dependency packages will need to patch their CMake scripts to use the lower-case name.
-        self.cpp_info.set_property("cmake_file_name", "cyclonedds")
-        self.cpp_info.set_property("pkg_config_name", "cyclonedds")
-
-        self.cpp_info.components["idl"].libs = ["cycloneddsidl"]
-        self.cpp_info.components["idl"].set_property("cmake_target_name", "cyclonedds::idl")
-
-        self.cpp_info.components["ddsc"].libs = ["ddsc"]
-        self.cpp_info.components["ddsc"].defines = ["DDSC_HAS_SHM"]
-        self.cpp_info.components["ddsc"].set_property("cmake_target_name", "cyclonedds::ddsc")
-        requires = []
-        if self.options.with_shm:
-            requires.append("iceoryx::iceoryx_binding_c")
-        if self.options.with_ssl:
-            requires.append("openssl::openssl")
-        self.cpp_info.components["ddsc"].requires = requires
-        if self.settings.os in ["Linux", "FreeBSD"]:
-            self.cpp_info.components["ddsc"].system_libs = ["pthread"]
-            if self.options.shared:
-                self.cpp_info.components["ddsc"].system_libs.append("dl")
-        elif self.settings.os == "Windows":
-            self.cpp_info.components["ddsc"].system_libs = [
-                "ws2_32",
-                "dbghelp",
-                "bcrypt",
-                "iphlpapi"
-            ]
