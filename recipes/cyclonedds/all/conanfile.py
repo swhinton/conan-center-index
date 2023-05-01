@@ -116,6 +116,8 @@ class CycloneDDSConan(ConanFile):
         tc.variables["BUILD_IDLC_TESTING"] = False
         tc.variables["ENABLE_SSL"] = self.options.with_ssl
         tc.variables["ENABLE_SHM"] = self.options.with_shm
+        if self.options.with_shm:
+            tc.preprocessor_definitions["DDSC_HAS_SHM"] = 1
         tc.variables["ENABLE_SECURITY"] = self.options.enable_security
         tc.variables["ENABLE_TYPE_DISCOVERY"] = self.options.with_type_discovery
         tc.variables["ENABLE_TOPIC_DISCOVERY"] = self.options.with_topic_discovery
@@ -154,10 +156,10 @@ class CycloneDDSConan(ConanFile):
         self.cpp_info.components["idl"].set_property("cmake_target_name", "cyclonedds::idl")
 
         self.cpp_info.components["ddsc"].libs = ["ddsc"]
-        self.cpp_info.components["ddsc"].defines = ["DDSC_HAS_SHM"]
         self.cpp_info.components["ddsc"].set_property("cmake_target_name", "cyclonedds::ddsc")
         requires = []
         if self.options.with_shm:
+            self.cpp_info.components["ddsc"].defines = ["DDSC_HAS_SHM"]
             requires.append("iceoryx::iceoryx_binding_c")
         if self.options.with_ssl:
             requires.append("openssl::openssl")

@@ -14,7 +14,6 @@ class CycloneDDSCXXTestConan(ConanFile):
 
     def requirements(self):
         self.requires("cyclonedds/0.10.3")
-        self.requires("iceoryx/2.0.2")
         self.requires(self.tested_reference_str)
 
     def build_requirements(self):
