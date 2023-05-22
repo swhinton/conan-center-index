@@ -1,0 +1,4 @@
+sources:
+  "clibs":
+    url: "https://github.com/c-libs/fmem/archive/refs/heads/master.zip"
+    sha256: "9435c4da25cc23287ab0d910b123e5d01db3492a5f1105c4020d1ce7535dc139"

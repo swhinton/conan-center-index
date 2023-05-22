@@ -1,0 +1,41 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 37770bb..97fecb4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,8 +1,13 @@
+ project(gherkin-cpp)
+ cmake_minimum_required(VERSION 3.0)
+ 
++set(CMAKE_VERBOSE_MAKEFILE ON)
++
+ option(BUILD_SHARED_LIBS "Build shared library." OFF)
+ 
++find_package(fmem CONFIG REQUIRED)
++find_package(gherkin-c CONFIG REQUIRED)
++
+ file(GLOB_RECURSE GHERKIN_CPP_SRS
+         src/*.cpp
+ )
+@@ -29,13 +34,9 @@ TARGET_INCLUDE_DIRECTORIES(gherkin-cpp
+         PUBLIC ${PROJECT_SOURCE_DIR}/include
+ )
+ 
+-ADD_SUBDIRECTORY(libs/fmem)
+-TARGET_LINK_LIBRARIES(gherkin-cpp PRIVATE fmem)
+-
+-ADD_SUBDIRECTORY(libs/gherkin-c)
+-TARGET_LINK_LIBRARIES(gherkin-cpp PRIVATE gherkin)
++TARGET_LINK_LIBRARIES(gherkin-cpp PRIVATE fmem::fmem)
+ 
+-ADD_SUBDIRECTORY(test)
++TARGET_LINK_LIBRARIES(gherkin-cpp PRIVATE gherkin-c::gherkin)
+ 
+ install(TARGETS gherkin-cpp
+         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+@@ -44,4 +45,4 @@ install(TARGETS gherkin-cpp
+ 
+ install(FILES
+         ${GHERKIN_H_SRS}
+-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gherkin-cpp)
+\ No newline at end of file
++        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

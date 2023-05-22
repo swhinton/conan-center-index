@@ -1,0 +1,5 @@
+versions:
+  "clibs":
+    folder: clibs
+  "24.1.0":
+    folder: all

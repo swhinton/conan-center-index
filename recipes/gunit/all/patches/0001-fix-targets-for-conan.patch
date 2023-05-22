@@ -1,0 +1,42 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b98c0bb..db16c8b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -9,9 +9,6 @@ cmake_minimum_required(VERSION 2.8.12)
+ project(GUnit CXX)
+ 
+ set(MASTER_PROJECT OFF)
+-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+-  set(MASTER_PROJECT ON)
+-endif()
+ 
+ option(GUNIT_ENABLE_MEMCHECK "Run the unit tests and examples under valgrind if it is found." OFF)
+ option(GUNIT_ENABLE_COVERAGE "Run coverage." OFF)
+@@ -50,26 +47,8 @@ endif()
+ 
+ enable_testing()
+ 
+-add_subdirectory(libs/googletest)
+-
+ add_library(gunit INTERFACE)
+-target_include_directories(gunit INTERFACE include)
+-target_include_directories(gunit
+-  INTERFACE ${gtest_SOURCE_DIR}/include
+-  ${gmock_SOURCE_DIR}/include
+-  libs/json/single_include/nlohmann
+-)
+-
+-target_link_libraries(gunit
+-  INTERFACE gtest_main
+-  INTERFACE gmock_main
+-  INTERFACE gherkin-cpp
+-)
+-
+-set(BUILD_GMOCK)
+-set(BUILD_GTEST)
+-
+-add_subdirectory(libs/gherkin-cpp)
++target_link_libraries(gunit PRIVATE GTest::gtest GTest::gmock GTest::gmock_main gherkin-cpp::gherkin-cpp)
+ 
+ find_program(MEMORYCHECK_COMMAND valgrind)
+ if (ENABLE_MEMCHECK AND MEMORYCHECK_COMMAND)

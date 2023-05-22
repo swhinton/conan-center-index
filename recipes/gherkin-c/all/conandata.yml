@@ -1,0 +1,4 @@
+sources:
+  "24.1.0":
+    url: "https://github.com/cucumber/gherkin-c/archive/refs/tags/v24.1.0.zip"
+    sha256: "5cddf03243a4037f3142552f3658d6de782c700eb1354f0d36c8f71f5e9e708e"

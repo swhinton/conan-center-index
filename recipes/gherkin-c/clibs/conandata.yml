@@ -1,0 +1,4 @@
+sources:
+  "clibs":
+    url: "https://github.com/c-libs/gherkin-c/archive/refs/heads/master.zip"
+    sha256: "329109971b90ae2d7c625c1ccb8f0d3b2f882cc8667f8a0abdacef573bae329c"
