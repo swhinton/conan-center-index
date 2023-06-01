@@ -40,3 +40,29 @@ index b98c0bb..db16c8b 100644
  
  find_program(MEMORYCHECK_COMMAND valgrind)
  if (ENABLE_MEMCHECK AND MEMORYCHECK_COMMAND)
+diff --git a/include/GUnit/GSteps.h b/include/GUnit/GSteps.h
+index d70a98c..7e058de 100644
+--- a/include/GUnit/GSteps.h
++++ b/include/GUnit/GSteps.h
+@@ -12,7 +12,7 @@
+ #include <cstdlib>
+ #include <functional>
+ #include <gherkin.hpp>
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ #include <stdexcept>
+ #include <string>
+ #include <type_traits>
+diff --git a/include/formatters/cucumberjson.hpp b/include/formatters/cucumberjson.hpp
+index 4ca082d..b7d7c12 100644
+--- a/include/formatters/cucumberjson.hpp
++++ b/include/formatters/cucumberjson.hpp
+@@ -8,7 +8,7 @@
+ #ifndef TESTS_GUNITWRAPPER_FORMATTERS_CUCUMBERJSON_HPP_
+ #define TESTS_GUNITWRAPPER_FORMATTERS_CUCUMBERJSON_HPP_
+ 
+-#include <json.hpp>
++#include <nlohmann/json.hpp>
+ #include <gherkin.hpp>
+ 
+ #include <fstream>

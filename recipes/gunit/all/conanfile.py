@@ -32,71 +32,18 @@ class gunit(ConanFile):
 
     short_paths = True
 
-    # @property
-    # def _min_cppstd(self):
-    #     return "14"
-
-    # @property
-    # def _compilers_minimum_version(self):
-    #     return {
-    #         "gcc": "7",
-    #         "Visual Studio": "16",
-    #         "msvc": "192",
-    #         "clang": "7",
-    #         "apple-clang": "10",
-    #     }
-
     def export_sources(self):
         export_conandata_patches(self)
 
-    # def configure(self):
-    #     self.settings.rm_safe("compiler.cppstd")
-    #     self.settings.rm_safe("compiler.libcxx")
-
-    # def layout(self):
-    #     cmake_layout(self)
-
-    # def validate(self):
-    #     if self.settings.compiler.get_safe("cppstd"):
-    #         check_min_cppstd(self, self._min_cppstd)
-    #     minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
-    #     if minimum_version and Version(self.settings.compiler.version) < minimum_version:
-    #         raise ConanInvalidConfiguration(
-    #             f"{self.ref} requires C{self._min_cppstd}, which your compiler does not support."
-    #         )
-
-    # def _cmake_new_enough(self, required_version):
-    #     try:
-    #         import re
-    #         from io import StringIO
-    #         output = StringIO()
-    #         self.run("cmake --version", stdout=output)
-    #         m = re.search(r"cmake version (\d+\.\d+\.\d+)", output.getvalue())
-    #         return Version(m.group(1)) >= required_version
-    #     except Exception as e:
-    #         print(e)
-    #         return False
-
     def build_requirements(self):
-        self.requires("nlohmann_json/[>=3.0]")
+        self.requires("nlohmann_json/[>=3.0]", transitive_headers=True, transitive_libs=True)
         self.requires("gtest/[>=1.0]", transitive_headers=True, transitive_libs=True)
         if self.options.with_bdd:
-            self.requires("gherkin-cpp/clibs")
+            self.requires("gherkin-cpp/clibs", transitive_headers=True, transitive_libs=True)
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
-
-    # def generate(self):
-    #     tc = CMakeToolchain(self)
-    #     tc.generate()
-    #     cd = CMakeDeps(self)
-    #     cd.generate()
-
-    # def build(self):
-    #     apply_conandata_patches(self)
-    #     cmake = CMake(self)
-    #     cmake.configure()
-    #     cmake.build()
+        apply_conandata_patches(self)
 
     def package(self):
         copy(self, "LICENSE", self.source_folder, os.path.join(self.package_folder, "licenses"))
