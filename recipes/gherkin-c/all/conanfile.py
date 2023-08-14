@@ -69,22 +69,6 @@ class gherkinc(ConanFile):
                 f"{self.ref} requires C{self._min_cstd}, which your compiler does not support."
             )
 
-    def _cmake_new_enough(self, required_version):
-        try:
-            import re
-            from io import StringIO
-            output = StringIO()
-            self.run("cmake --version", stdout=output)
-            m = re.search(r"cmake version (\d+\.\d+\.\d+)", output.getvalue())
-            return Version(m.group(1)) >= required_version
-        except Exception as e:
-            print(e)
-            return False
-
-    def build_requirements(self):
-        if not self._cmake_new_enough("3"):
-            self.tool_requires("cmake/3")
-
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
 
