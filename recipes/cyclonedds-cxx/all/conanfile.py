@@ -82,9 +82,9 @@ class CycloneDDSCXXConan(ConanFile):
         cmake_layout(self, src_folder="src")
 
     def requirements(self):
-        self.requires("cyclonedds/0.10.3")
+        self.requires("cyclonedds/0.10.3", transitive_headers=True, transitive_libs=True)
         if self.options.with_shm:
-            self.requires("iceoryx/2.0.2")
+            self.requires("iceoryx/2.0.2", transitive_headers=True, transitive_libs=True)
         if self.options.with_legacy_support:
             self.requires("boost/1.81.0")
 
