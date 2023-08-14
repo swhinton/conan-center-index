@@ -48,9 +48,9 @@ class IceoryxConan(ConanFile):
 
     def requirements(self):
         if self.options.toml_config:
-            self.requires("cpptoml/0.1.1")
+            self.requires("cpptoml/0.1.1", transitive_headers=True, transitive_libs=True)
         if self.settings.os == "Linux":
-            self.requires("acl/2.3.1")
+            self.requires("acl/2.3.1", transitive_headers=True, transitive_libs=True)
 
     def _cmake_new_enough(self, required_version):
         try:
@@ -173,13 +173,13 @@ class IceoryxConan(ConanFile):
             "iceoryx_posh": {
                 "target": "iceoryx_posh::iceoryx_posh",
                 "system_libs": pthread() + rt(),
-                "requires": ["iceoryx_hoofs"],
+                "requires": ["iceoryx_hoofs"] + acl(),
                 "includeDir": True
             },
             "iceoryx_posh_roudi": {
                 "target": "iceoryx_posh::iceoryx_posh_roudi",
                 "system_libs": pthread(),
-                "requires": ["iceoryx_hoofs", "iceoryx_posh"] + cpptoml(),
+                "requires": ["iceoryx_hoofs", "iceoryx_posh"] + cpptoml() + acl(),
                 "includeDir": False
             },
             "iceoryx_posh_gateway": {
@@ -196,7 +196,7 @@ class IceoryxConan(ConanFile):
             },
             "iceoryx_binding_c": {
                 "target": "iceoryx_binding_c::iceoryx_binding_c",
-                "system_libs": pthread() + libcxx(),
+                "system_libs": pthread() + libcxx() + acl(),
                 "requires": ["iceoryx_hoofs", "iceoryx_posh"],
                 "includeDir": True
             }
@@ -237,6 +237,7 @@ class IceoryxConan(ConanFile):
                 self.cpp_info.components[lib_name].build_modules["cmake_find_package_multi"] = [
                     self._module_file_rel_path
                 ]
+                print(lib_name, requires)
 
         _register_components(self._iceoryx_components)
 
