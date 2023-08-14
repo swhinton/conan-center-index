@@ -1,5 +1,9 @@
-from conans import ConanFile, tools
-from conans.errors import ConanInvalidConfiguration
+from conan import ConanFile, tools
+from conan.errors import ConanInvalidConfiguration
+from conan.tools.build import check_min_cppstd
+from conan.tools.files import copy, get
+from conan.tools.layout import basic_layout
+from conan.tools.scm import Version
 import os
 
 
@@ -15,47 +19,47 @@ class DiConan(ConanFile):
     options = {"with_extensions": [True, False], "diagnostics_level": [0, 1, 2]}
     default_options = {"with_extensions": False, "diagnostics_level": 1}
     no_copy_source = True
+    package_type = "header-library"
 
     @property
-    def _source_subfolder(self):
-        return "source_subfolder"
+    def _min_cppstd(self):
+        return "14"
 
-    def configure(self):
-        minimal_cpp_standard = "14"
-        if self.settings.compiler.cppstd:
-            tools.check_min_cppstd(self, minimal_cpp_standard)
-        minimal_version = {
+    @property
+    def _minimum_compilers_version(self):
+        return {
             "gcc": "5",
             "clang": "3.4",
             "apple-clang": "10",
             "Visual Studio": "15"
         }
-        compiler = str(self.settings.compiler)
-        if compiler not in minimal_version:
-            self.output.warn(
-                "%s recipe lacks information about the %s compiler standard version support" % (self.name, compiler))
-            self.output.warn(
-                "%s requires a compiler that supports at least C++%s" % (self.name, minimal_cpp_standard))
-            return
-        version = tools.Version(self.settings.compiler.version)
-        if version < minimal_version[compiler]:
-            raise ConanInvalidConfiguration("%s requires a compiler that supports at least C++%s" % (self.name, minimal_cpp_standard))
 
-    def source(self):
-        tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = "di-" + self.version
-        os.rename(extracted_dir, self._source_subfolder)
-
-    def package(self):
-        self.copy("BSL-1.0.txt", src="", dst="licenses")
-        if self.options.with_extensions:
-            self.copy("*.hpp", src=os.path.join(self._source_subfolder, "extension", "include", "boost", "di", "extension"), dst=os.path.join("include", "boost", "di", "extension"), keep_path=True)
-        self.copy("di.hpp", src=os.path.join(self._source_subfolder, "include", "boost"), dst=os.path.join("include", "boost"))
+    def layout(self):
+        basic_layout(self, src_folder="src")
 
     def package_id(self):
-        self.info.requires.clear()
-        self.info.settings.clear()
-        del self.info.options.diagnostics_level
+        self.info.clear()
+
+    def validate(self):
+        if self.settings.compiler.get_safe("cppstd"):
+            check_min_cppstd(self, self._min_cppstd)
+        minimum_version = self._minimum_compilers_version.get(str(self.settings.compiler), False)
+        if minimum_version and Version(self.settings.compiler.version) < minimum_version:
+            raise ConanInvalidConfiguration(
+                f"{self.ref} requires C++{self._min_cppstd}, which your compiler does not support.",
+            )
+
+    def source(self):
+        get(self, **self.conan_data["sources"][self.version], destination=self.source_folder, strip_root=True)
+
+    def package(self):
+        copy(self, "BSL-1.0.txt", src="", dst="licenses")
+        copy(self, "*", src=os.path.join(self.source_folder, "include"), dst=os.path.join(self.package_folder, "include"))
 
     def package_info(self):
+        self.cpp_info.set_property("cmake_file_name", "di")
+        self.cpp_info.set_property("cmake_target_name", "di::di")
         self.cpp_info.defines.append("BOOST_DI_CFG_DIAGNOSTICS_LEVEL={}".format(self.options.diagnostics_level))
+        self.cpp_info.bindirs = []
+        self.cpp_info.libdirs = []
+        self.cpp_info.resdirs = []
