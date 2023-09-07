@@ -222,7 +222,6 @@ class IceoryxConan(ConanFile):
                 self.cpp_info.components[lib_name].build_modules["cmake_find_package_multi"] = [
                     self._module_file_rel_path
                 ]
-                print(lib_name, requires)
 
         _register_components(self._iceoryx_components)
 
