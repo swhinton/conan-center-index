@@ -103,7 +103,7 @@ class CycloneDDSCXXConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         # The IDL generator from CycloneDDS isn't part of this package, but we need to produce the library for it.
-        tc.variables["BUILD_IDLLIB"] = True
+        tc.variables["BUILD_IDLLIB"] = False
         tc.variables["ENABLE_LEGACY"] = self.options.with_legacy_support
         tc.variables["ENABLE_SHM"] = self.options.with_shm
         tc.variables["ENABLE_TYPE_DISCOVERY"] = self.options.with_type_discovery
@@ -137,10 +137,6 @@ class CycloneDDSCXXConan(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "cyclonedds-cxx")
         self.cpp_info.set_property("pkg_config_name", "cyclonedds-cxx")
-
-        # C++ IDL extension for the IDLC tool.
-        self.cpp_info.components["idlcxx"].libs = ["cycloneddsidlcxx"]
-        self.cpp_info.components["idlcxx"].set_property("cmake_target_name", "cyclonedds-cxx::idlcxx")
 
         self.cpp_info.components["ddscxx"].libs = ["ddscxx"]
         self.cpp_info.components["ddscxx"].set_property("cmake_target_name", "cyclonedds-cxx::ddscxx")

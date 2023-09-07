@@ -95,10 +95,9 @@ class CycloneDDSConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         # We need to build the IDL library here so that the CXX package can link to it... ay ay ay
-        tc.variables["BUILD_IDLC"] = True
+        tc.variables["BUILD_IDLC"] = False
         tc.variables["BUILD_IDLC_TESTING"] = False
         tc.variables["BUILD_DDSPERF"] = False
-        tc.variables["BUILD_IDLC_TESTING"] = False
         tc.variables["ENABLE_SSL"] = self.options.with_ssl
         tc.variables["ENABLE_SHM"] = self.options.with_shm
         if self.options.with_shm:
@@ -136,9 +135,6 @@ class CycloneDDSConan(ConanFile):
         # dependency packages will need to patch their CMake scripts to use the lower-case name.
         self.cpp_info.set_property("cmake_file_name", "cyclonedds")
         self.cpp_info.set_property("pkg_config_name", "cyclonedds")
-
-        self.cpp_info.components["idl"].libs = ["cycloneddsidl"]
-        self.cpp_info.components["idl"].set_property("cmake_target_name", "cyclonedds::idl")
 
         self.cpp_info.components["ddsc"].libs = ["ddsc"]
         self.cpp_info.components["ddsc"].set_property("cmake_target_name", "cyclonedds::ddsc")
