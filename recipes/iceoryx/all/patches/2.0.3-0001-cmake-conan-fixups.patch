@@ -1,0 +1,129 @@
+diff --git a/iceoryx_binding_c/CMakeLists.txt b/iceoryx_binding_c/CMakeLists.txt
+index 258d3a5f8..67bdb3366 100644
+--- a/iceoryx_binding_c/CMakeLists.txt
++++ b/iceoryx_binding_c/CMakeLists.txt
+@@ -104,6 +104,10 @@ if(NOT (WIN32 OR QNX))
+         iceoryx_posh::iceoryx_posh
+         iceoryx_hoofs::iceoryx_hoofs
+     )
++    if (LINUX)
++        find_package(acl REQUIRED)
++        target_link_libraries(${PROJECT_NAME} PRIVATE acl::acl)
++    endif()
+ else()
+     target_link_libraries(${PROJECT_NAME}
+       PRIVATE
+diff --git a/iceoryx_hoofs/CMakeLists.txt b/iceoryx_hoofs/CMakeLists.txt
+index b8a830c80..88d8067a0 100644
+--- a/iceoryx_hoofs/CMakeLists.txt
++++ b/iceoryx_hoofs/CMakeLists.txt
+@@ -204,7 +204,8 @@ target_link_libraries(iceoryx_hoofs
+ )
+ 
+ if(LINUX)
+-    target_link_libraries(iceoryx_hoofs PRIVATE acl atomic ${CODE_COVERAGE_LIBS})
++    find_package(acl REQUIRED)
++    target_link_libraries(iceoryx_hoofs PRIVATE acl::acl atomic ${CODE_COVERAGE_LIBS})
+ endif()
+ 
+ target_compile_options(iceoryx_hoofs PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+diff --git a/iceoryx_meta/CMakeLists.txt b/iceoryx_meta/CMakeLists.txt
+index c9aec6e00..9e83b054a 100644
+--- a/iceoryx_meta/CMakeLists.txt
++++ b/iceoryx_meta/CMakeLists.txt
+@@ -52,7 +52,6 @@ endif()
+ 
+ # ===== Gateways
+ if(DDS_GATEWAY)
+-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/cyclonedds ${CMAKE_BINARY_DIR}/dependencies/cyclonedds/prebuild)
+     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../iceoryx_dds ${CMAKE_BINARY_DIR}/iceoryx_dds)
+ endif()
+ 
+diff --git a/iceoryx_posh/CMakeLists.txt b/iceoryx_posh/CMakeLists.txt
+index 02c923526..621fc430c 100644
+--- a/iceoryx_posh/CMakeLists.txt
++++ b/iceoryx_posh/CMakeLists.txt
+@@ -23,15 +23,10 @@ project(iceoryx_posh VERSION ${IOX_VERSION_STRING})
+ find_package(Threads REQUIRED)
+ find_package(iceoryx_hoofs REQUIRED)
+ 
+-option(DOWNLOAD_TOML_LIB "Download cpptoml via the CMake ExternalProject module" ON)
+ option(TOML_CONFIG "TOML support for RouDi with dynamic configuration" ON)
+ option(ONE_TO_MANY_ONLY "Restricts communication to 1:n pattern" OFF)
+ 
+ if(TOML_CONFIG)
+-    if (DOWNLOAD_TOML_LIB)
+-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cpptoml/ ${CMAKE_BINARY_DIR}/dependencies/posh/cpptoml/prebuild)
+-    endif()
+-
+     find_package(cpptoml REQUIRED)
+ endif()
+ 
+@@ -155,7 +150,6 @@ add_library(${PROJECT_NAMESPACE}::iceoryx_posh ALIAS iceoryx_posh) # @todo iox-#
+ set_target_properties(iceoryx_posh PROPERTIES
+     CXX_STANDARD_REQUIRED ON
+     CXX_STANDARD ${ICEORYX_CXX_STANDARD}
+-    POSITION_INDEPENDENT_CODE ON
+     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+ )
+ 
+@@ -189,7 +183,8 @@ target_link_libraries(iceoryx_posh
+ target_compile_options(iceoryx_posh PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+ 
+ if(LINUX)
+-    target_link_libraries(iceoryx_posh PRIVATE rt )
++    find_package(acl REQUIRED)
++    target_link_libraries(iceoryx_posh PRIVATE acl::acl rt )
+ elseif(QNX)
+ elseif(APPLE)
+ elseif(WIN32)
+@@ -220,7 +215,6 @@ add_library(${PROJECT_NAMESPACE}::iceoryx_posh_gateway ALIAS iceoryx_posh_gatewa
+ set_target_properties(iceoryx_posh_gateway PROPERTIES
+     CXX_STANDARD_REQUIRED ON
+     CXX_STANDARD ${ICEORYX_CXX_STANDARD}
+-    POSITION_INDEPENDENT_CODE ON
+     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+ )
+ 
+@@ -274,7 +268,6 @@ add_library(${PROJECT_NAMESPACE}::iceoryx_posh_roudi ALIAS iceoryx_posh_roudi)
+ set_target_properties(iceoryx_posh_roudi PROPERTIES
+     CXX_STANDARD_REQUIRED ON
+     CXX_STANDARD ${ICEORYX_CXX_STANDARD}
+-    POSITION_INDEPENDENT_CODE ON
+     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+ )
+ 
+@@ -302,6 +295,9 @@ target_link_libraries(iceoryx_posh_roudi
+ 
+ if(CMAKE_SYSTEM_NAME MATCHES QNX)
+     target_link_libraries(iceoryx_posh_roudi PRIVATE socket)
++elseif(LINUX)
++    find_package(acl REQUIRED)
++    target_link_libraries(iceoryx_posh_roudi PRIVATE acl::acl)
+ endif(CMAKE_SYSTEM_NAME MATCHES QNX)
+ 
+ target_compile_options(iceoryx_posh_roudi PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+@@ -322,7 +318,6 @@ if(TOML_CONFIG)
+     set_target_properties(iceoryx_posh_config PROPERTIES
+         CXX_STANDARD_REQUIRED ON
+         CXX_STANDARD ${ICEORYX_CXX_STANDARD}
+-        POSITION_INDEPENDENT_CODE ON
+         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+     )
+ 
+@@ -358,7 +353,6 @@ if(TOML_CONFIG)
+     set_target_properties(iox-roudi PROPERTIES
+         CXX_STANDARD_REQUIRED ON
+         CXX_STANDARD ${ICEORYX_CXX_STANDARD}
+-        POSITION_INDEPENDENT_CODE ON
+         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+     )
+ 
+@@ -433,7 +427,6 @@ if(ROUDI_ENVIRONMENT OR BUILD_TEST)
+     set_target_properties(iceoryx_posh_testing PROPERTIES
+         CXX_STANDARD_REQUIRED ON
+         CXX_STANDARD ${ICEORYX_CXX_STANDARD}
+-        POSITION_INDEPENDENT_CODE ON
+     )
+ 
+     target_include_directories(iceoryx_posh_testing
