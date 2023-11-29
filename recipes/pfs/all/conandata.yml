@@ -1,0 +1,4 @@
+sources:
+  "0.6.0":
+    url: "https://github.com/dtrugman/pfs/archive/refs/tags/v0.6.0.tar.gz"
+    sha256: "44d740950a98fc488e45478b839c365ef68628a3a71e3b34f4e8668cb8a07e72"
